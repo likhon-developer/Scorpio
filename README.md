@@ -1,6 +1,14 @@
 # Scorpio AI Agent System
 
+<div align="center">
+  <img src="public/images/scorpio-logo.png" alt="Scorpio Logo" width="200" height="200"/>
+</div>
+
 Scorpio is a multi-component Retrieval-Augmented Generation (RAG) system that provides a general-purpose AI agent capable of running various tools and operations in isolated sandbox environments.
+
+## Developer
+- Telegram: [t.me/likhonsheikh](https://t.me/likhonsheikh)
+- Twitter: [x.com/likhonymous](https://x.com/likhonymous)
 
 ## Key Features
 
