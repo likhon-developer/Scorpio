@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # Scorpio Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - MONGODB_URL=mongodb://mongodb:27017
+      - REDIS_URL=redis://redis:6379
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - scorpio-network
+    restart: unless-stopped
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=scorpio
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - scorpio-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - scorpio-network
+    restart: unless-stopped
+
+  # Sandbox Environment (for tool execution)
+  sandbox:
+    image: node:20-slim
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./sandbox:/app
+      - sandbox_workspace:/workspace
+    working_dir: /app
+    command: [ "tail", "-f", "/dev/null" ] # Keep container running
+    networks:
+      - scorpio-network
+    restart: unless-stopped
+
+  # VNC Server for browser visualization
+  vnc:
+    image: dorowu/ubuntu-desktop-lxde-vnc:latest
+    ports:
+      - "5900:5900"
+      - "9222:9222"
+    environment:
+      - VNC_PASSWORD=password
+    volumes:
+      - vnc_data:/home/ubuntu
+    networks:
+      - scorpio-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+  redis_data:
+  sandbox_workspace:
+  vnc_data:
+
+
+networks:
+  scorpio-network:
+    driver: bridge
